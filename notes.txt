@@ -1,0 +1,28 @@
+x86 bootloader
+
+Bios
+    -BIOS is an x86 idiom for bootloader. First stage bootloader
+    -BIOS selects boot device and copies first sector into physical memory at addr 0x7c00
+    -boot sector(512mb) will conain bootloader code, partition table, disc signature
+    as well as 'magic number'
+        -'magic number is checked by bios to avoid loading something into boot sector
+        that isnt suppose to be there
+    -bios tells CPU to jump to beginning of bootloader, passing control to bootloader
+    -in order for kernel to start:
+        -load kernel from disc to memory
+        -set tup global descriptor table
+        -swtiching fro 16bit to 32 and passing control to kernel
+Processor Modes
+    -processor modes refer to way a processor creates an operating system env for itself
+    -three mode: real mode, protected mode, virtual real mode
+    -Real Mode
+        -only one program at a time
+        -faster but with limited memory(1mb)
+        -doesnt use 32bit
+    -Protected mode
+        -used for multitasking
+        -full access to systems memory
+        -supports virtual memory
+        -faster access to memory and faster 32bit drivers to do i/o
+        -each program runnign has its own memory address
+
