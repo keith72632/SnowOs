@@ -1,0 +1,19 @@
+Basic Steps for Bootloader
+
+1.BIOS
+    -Basic Input Output System
+    -executes mbr (Master Boot Record)
+    -searches, loads and executes bootloader program
+    -looks for bootloader in floppy, cd-rom or hard drive
+    -once bootloader is detected and loaded into memory, bios gives control to it
+
+2.MBR
+    -Mster Boot Record
+    -located in first sector of bootable disc.typically /dev/hda or dev/sda
+    -MBR is less than 512 mb
+        -primary bootloader in first 446 bytes
+        -partition table info in next 64 bytes
+        -MBR validation in last two bytes
+        -contains info about GRUB
+    -in simple terms, loads GRUB
+

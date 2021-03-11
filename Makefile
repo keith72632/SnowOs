@@ -10,7 +10,7 @@ kernel.bin: kernel-entry.o kernel.o
 kernel-entry.o: kernel-entry.asm
 	nasm $< -f elf -o $@
 kernel.o: kernel.c
-	gcc -m32 -ffreestanding -c $< -o $@
+	gcc -fno-pie -m32 -ffreestanding -c $< -o $@
 mbr.bin: mbr.asm
 	nasm $< -f bin -o $@
 os-image.bin: mbr.bin kernel.bin
