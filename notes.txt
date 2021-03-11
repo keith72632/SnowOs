@@ -1,5 +1,11 @@
 x86 bootloader
 
+Registers
+	-registers ax through dx are 16bit general purpose registers and eax through edx are
+	general purpose 32bit register. 
+	-al through dl are the "low" bits which is the bottom half of registers ax-dx
+	-ah through dh are the "high" bits which is the top half of registers ax-dx
+
 Bios
     -BIOS is an x86 idiom for bootloader. First stage bootloader
     -BIOS selects boot device and copies first sector into physical memory at addr 0x7c00
@@ -25,4 +31,53 @@ Processor Modes
         -supports virtual memory
         -faster access to memory and faster 32bit drivers to do i/o
         -each program runnign has its own memory address
-
+Reading From Disk
+	Cylinder-head-sector:
+		-way of addressing each physical block on hardrive
+		-sector is like a "slice" out of disk, where as cylinder would be ring around disk
+	-easy in 16bit, utilize BIOS by sending interrupts
+	-in order to read from disk, specify where to read, how much to read and where to store 
+	the data in memory
+	-send int 0x13, then set register system calls:
+		-ah (MODE(0x02=read from disk))
+		-al (Number of sectors to read)
+		-ch (Cylinder)
+		-cl (Sector)
+		-dh (Head)
+		-es:bx (Memory address to load into (Buffer address pointer))
+	-push all general purpose register to stack with pusha
+Global Descriptor Table:
+	-memory segmenmtation works differently when leaving 16 bit mode
+	-in protected mode, memory segments are defined by segment descriptors
+	-flat memory model, or (linear memory model) refers to memory addressing paradigm in 
+	which "memory appears to the program as a single contignous addess space" The CPU can
+	directly address all of the available memory locations without having ot resort to any
+	sort of memory segmentation or paging schemes
+	-code and data will span 4gb
+	-GDT structure contains
+		-null segment descriptor. Catches errors where code forgets to select memory segment
+		thus yielding an invalid segment
+		-the 4gb code segment descriptor
+		-the 4 gb data segment descriptor
+	-a Segment Descriptor is a data structure containing the following:
+		-base addr: 32bit starting memory address of the segment. this project, both data
+		and code segement will be 0x00
+		-segmenet limit: 20 bit length of the segments. 0xfffff for both segments
+		-G(granularity): if set, the segmenet limit is counted as 4096-byte pages. this
+		will be 1 for both segements, making the limit of 0xfffff pages into 0xfffff000
+		bytes = 4gb
+		-D(defualt operand size)/B(big): if set, 32 bit segement, otherwise 16bit. 1 for 
+		both segment
+		-L(long): if set, this is 64 bit segement(D must be 0)
+		-AVL(available): Can be used for whatever (debugging), but set to 0 for now
+		-DPL(descriptor priviledge level): priv level on protection ring required to access
+		descriptor. will be 0 for both segements, kernel will access those
+		-Type: if 1, this is code segmenet descriptor, 0 means data segement
+			-code segement=D C R ; data segment=b, e, w
+		-C(conforming): Code in this segment may be called for less-priviledged levels. 
+		set to 0 to protect kernel
+		-E(exand down): wether the data segment expands from the limit down base. Only 
+		relevant for stack segmenets adn set to 0 in this case
+		-W(writable): Set if data can be written to. Otherwise read only. 1 in this case
+		-A(accessed): flag set by hardware when the segment is accessed. Debugging
+		
