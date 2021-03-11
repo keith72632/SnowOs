@@ -18,7 +18,7 @@ disk_load:
 	pop dx          ;get back original number of sectors to read
 	cmp al, dh      ;BIOS sets 'al' to the # of sectors actually read
 					;comppare it to dh and error out if they are !=
-	jne sector_error
+	jne sectors_error
 	popa 
 	ret
 
