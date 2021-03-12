@@ -17,5 +17,7 @@ os-image.bin: mbr.bin kernel.bin
 	cat $^ > $@
 run: os-image.bin
 	qemu-system-i386 -fda $<
+test: test.c
+	gcc -g -m32 $^ -o $@ 
 clean:
-	$(RM) *.bin *.o *.dis
+	$(RM) *.bin *.o *.dis test
