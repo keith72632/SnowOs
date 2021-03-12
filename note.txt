@@ -13,6 +13,9 @@ Bios
     as well as 'magic number'
         -'magic number is checked by bios to avoid loading something into boot sector
         that isnt suppose to be there
+	-Boot Sector is sector of a persistant storage device like a floppy or hard disk
+		-very first sector of hard disc is boot sector regardless of size(512 or 4096)
+		-IBM compatiable machine selects boot device then copies first sector at memory address 0x7c00
     -bios tells CPU to jump to beginning of bootloader, passing control to bootloader
     -in order for kernel to start:
         -load kernel from disc to memory
@@ -80,4 +83,46 @@ Global Descriptor Table:
 		relevant for stack segmenets adn set to 0 in this case
 		-W(writable): Set if data can be written to. Otherwise read only. 1 in this case
 		-A(accessed): flag set by hardware when the segment is accessed. Debugging
-		
+Switching to Portected Mode
+	-disable interrupts using cli intstruction (if not in protected mode, cli clears the IF
+	flag in the EFLAGS registers
+	-load the GDT desriptor into the GDT register using the lgdt instruction
+		-lgdt loads the values in the source operand into the GDTR or the interrupt descipt
+		table. The source operand specifies a 6-byte memory location that contains the base
+		addr (linear address) and the limit(size of table in bytes) of Global Descriptor
+		table or the IDT (interrupt dicriptor table). If 32 bits a 16-bit limit 
+		(lower 2 bytes of the 6-byte data operand) and a 32-bit base address 
+		(upper 4 bytes of the data operand) are loaded into the register. 
+		If the operand-size attribute is 16 bits, a 16-bit limit (lower 2 bytes) 
+		and a 24-bit base address (third, fourth, and fifth byte) are loaded.
+		Here, the high-order byte of the operand is not used and the 
+		high-order byte of the base address in the GDTR or IDTR is filled with zeros.
+		-enable protected mode in the CONTROL register using cr0
+		-Far jump into our code segment using jmp. needs to be a far jump so it flushed 
+		the CPU pipeline, getting rid of any prefetched 16bit instructions
+			-Far jump secifies both segmemt and offset
+		-setup all segment register(ds, ss, es, fs, gs) to point single 4gb data segement
+		-setup a new stack by setting the 32bit bottom pointer(ebp) and our esp
+		-jump back to mbr.asm and give control to he kernel by calling 32bit kernel entry		
+Writing Kernel
+	-leaving 16bit real mode means you wont have BIOS at our disposal and have to write own
+	i/o drivers, but can now write in C
+	-output to screen will need to modify video memeory, VGA text mode eneabled memory begins
+	at -xb8000
+	-Writing to screen via video memory
+		-in protected mode and not using bios, have direct access
+		-color monitors 0xb8000 and monochrome 0xb0000
+		-text mode two bytes for every character. One byte for ascii, the other for attribute
+Kernel Entry
+	-call main function in C
+	-create function that calls main at KERNEL_OFFSET
+	-kernel entry not included in mbr.asm, so place in front of kernel binary
+VGA Driver
+	-i/o driver for visual output
+	-VGA 80x25
+	-produce screen output by modifying dedicated memory region called video memory
+	-specific port addressed interact with device ports usin I/O CPU instructions in and out
+	-all i/o ports are memory mapped
+	-access device "in and out" ports by using inline assebly
+		-ex. __asm__("in %%al, %%dx" : "a=" (destination) : "d" (port));
+		     __asm__("out %%dx, %%al" : : "a"(data), "d" (port));

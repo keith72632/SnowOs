@@ -37,7 +37,7 @@ BEGIN_32BIT:
 BOOT_DRIVE db 0
 
 ;padding
-times 510 - ($-$$) db 0   ; this literally just filles up space
+times 510 - ($-$$) db 0   ; this literally just fills up space
 
 ;magic number
 dw 0xaa55

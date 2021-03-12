@@ -6,6 +6,7 @@ Basic Steps for Bootloader
     -searches, loads and executes bootloader program
     -looks for bootloader in floppy, cd-rom or hard drive
     -once bootloader is detected and loaded into memory, bios gives control to it
+	-mbr is sometimes on usb stick
 
 2.MBR
     -Mster Boot Record
