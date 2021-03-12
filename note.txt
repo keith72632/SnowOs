@@ -126,3 +126,11 @@ VGA Driver
 	-access device "in and out" ports by using inline assebly
 		-ex. __asm__("in %%al, %%dx" : "a=" (destination) : "d" (port));
 		     __asm__("out %%dx, %%al" : : "a"(data), "d" (port));
+		-the assembly portion funs front to back, but variables back to front
+Interfacing with I/O ports
+	-ports 0x3d4 and 0x3d5
+	-in and out asm instructions read and write port data
+	-to write(in), map port to dx and store value in al
+		__asm__("in %%dx, %%al": "a="(result) : "d"(port));
+	-to read(out), map port to al and data wish to read to dx
+		__asm__("out %%al, %%dx"::"a"data, "d"(port));
