@@ -26,8 +26,8 @@ int main()
 {
     char string[6] = "hello\n";
    clear_screen();
-   write_string(WHITE_ON_BLACK, string);
-   //print_string("Hello World!\n");
+  // write_string(WHITE_ON_BLACK, string);
+   print_string("Hello World!\n");
    return 0;
 }
 
