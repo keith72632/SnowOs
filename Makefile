@@ -12,7 +12,7 @@ build/kernel.bin: build/kernel_entry.o build/kernel.o
 	/home/linuxbrew/.linuxbrew/Cellar/x86_64-elf-binutils/2.36.1/bin/x86_64-elf-ld -m elf_i386 -o $@ -Ttext 0x1000 $^ --oformat binary
 build/kernel_entry.o: boot/kernel_entry.asm
 	nasm $< -f elf -o $@
-build/kernel.o: kernel/src/kernel.c
+build/kernel.o: kernel/src/kernel.c 
 	gcc -fno-pie -m32 -ffreestanding -c $< -o $@
 build/mbr.bin: boot/mbr.asm
 	nasm $< -f bin -o $@
