@@ -1,6 +1,7 @@
 
 #include "video.h"
 #include "port.h"
+#include "../kernel/utils/utils.h"
 
 void write_string(int color, const char * string);
 void set_cursor(int offset);
@@ -62,13 +63,7 @@ void set_char_at_video_memory(char character, int offset)
 
 
 //scrolling. move rows up by one except first row. fill last row with blanks. correct offset
-void memory_copy(char *source, char *dest, int nbytes)
-{
-    int i;
-    //copys source to dest
-    for (i = 0; i < nbytes; i++)
-        *(dest + 1) = *(source + 1);
-}
+
 
 int scroll_ln(int offset)
 {

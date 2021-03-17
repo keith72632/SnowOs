@@ -24,8 +24,7 @@ disk_load:
 
 disk_error:
 	jmp disk_loop
-	mov bx, ERROR_MSG
-	call print
+
 
 sectors_error:
 	jmp disk_loop

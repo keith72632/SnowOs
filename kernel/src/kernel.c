@@ -1,12 +1,20 @@
 #include "../../drivers/video.h"
 #include "../../drivers/port.h"
+#include "../../cpu/idt.h"
+#include "../../cpu/isr.h"
+#include "../../cpu/timer.h"
+#include "../../drivers/keyboard.h"
 
-int main()
+int start_kernel()
 {
-    char string[12] = "hello world!";
-    //clear_screen();
-    print_string(string);
+    clear_screen();
+	print_string("Installing interrupt service routines (ISRs).\n");
+	isr_install();
 
+	print_string("Enabling external interrupts.\n");
+	asm volatile ("sti");
+
+	print_string("Initializing Keyboard (IRQ 1).\n");
     return 0;
 }
 

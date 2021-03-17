@@ -1,26 +1,26 @@
-[bits 32]
-;constants
+[bits 32] ; using 32-bit protected mode
+
+; this is how constants are defined
 VIDEO_MEMORY equ 0xb8000
-WHITE_ON_BLACK equ 0x0f
+WHITE_ON_BLACK equ 0x0f ; the color byte for each character
 
-print_string_pm:
-    pusha 
-    mov edx, VIDEO_MEMORY     ;edx start of vid mem
+print32:
+    pusha
+    mov edx, VIDEO_MEMORY
 
-print_string_pm_loop:
-    mov al, [ebx]
+print32_loop:
+    mov al, [ebx] ; [ebx] is the address of our character
     mov ah, WHITE_ON_BLACK
 
-    cmp al, 0
-    je print_done
+    cmp al, 0 ; check if end of string
+    je print32_done
 
-    mov [edx], ax             ;stores char and attributes at current character cell
+    mov [edx], ax ; store character + attribute in video memory
+    add ebx, 1 ; next char
+    add edx, 2 ; next video memory position
 
-    add ebx, 1                ;increment ebx to the next char in string
-    add edx, 2                ;move to next character cell in vid mem
+    jmp print32_loop
 
-    jmp print_string_pm_loop
-
-print_done:
-    popa 
+print32_done:
+    popa
     ret

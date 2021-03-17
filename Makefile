@@ -2,8 +2,8 @@
 # $< = first dependency
 # $^ = all dependecny
 
-C_SOURCES = $(wildcard kernel/src/*.c drivers/*.c cpu/*.c)
-HEADERS = $(wildcard drivers/*.h)
+C_SOURCES = $(wildcard kernel/src/*.c drivers/*.c cpu/*.c kernel/utils/*.c)
+HEADERS = $(wildcard drivers/*.h cpu/*.h kernel/utils/*.h) cpu/isr.h
 OBJ_FILES = ${C_SOURCES:.c=.o cpu/interrupt.o}
 GDB = /home/linuxbrew/.linuxbrew/Cellar/i386-elf-gdb/10.1/bin/i386-elf-gdb
 #first rule is the one exectued when no parameters
@@ -21,7 +21,7 @@ os-image.bin: mbr.bin kernel.bin
 	cat $^ > $@
 #-fda before bin file to set dl 0x00, -boot after bin file to set dl as 0x80
 run: os-image.bin
-	qemu-system-i386 $<
+	qemu-system-i386 -fda $<
 #debug
 kernel.elf: kernel_entry.o ${OBJ_FILES}
 	/home/linuxbrew/.linuxbrew/Cellar/x86_64-elf-binutils/2.36.1/bin/x86_64-elf-ld -m elf_i386 -o $@ -Ttext 0x1000 $^
