@@ -2,9 +2,9 @@
 # $< = first dependency
 # $^ = all dependecny
 
-C_SOURCES = $(wildcard kernel/src/*.c drivers/*.c)
+C_SOURCES = $(wildcard kernel/src/*.c drivers/*.c cpu/*.c)
 HEADERS = $(wildcard drivers/*.h)
-OBJ_FILES = ${C_SOURCES:.c=.o}
+OBJ_FILES = ${C_SOURCES:.c=.o cpu/interrupt.o}
 GDB = /home/linuxbrew/.linuxbrew/Cellar/i386-elf-gdb/10.1/bin/i386-elf-gdb
 #first rule is the one exectued when no parameters
 all: run
@@ -19,8 +19,9 @@ mbr.bin: boot/mbr.asm
 	nasm $< -f bin -o $@
 os-image.bin: mbr.bin kernel.bin
 	cat $^ > $@
+#-fda before bin file to set dl 0x00, -boot after bin file to set dl as 0x80
 run: os-image.bin
-	qemu-system-i386 -fda $<
+	qemu-system-i386 $<
 #debug
 kernel.elf: kernel_entry.o ${OBJ_FILES}
 	/home/linuxbrew/.linuxbrew/Cellar/x86_64-elf-binutils/2.36.1/bin/x86_64-elf-ld -m elf_i386 -o $@ -Ttext 0x1000 $^
@@ -29,11 +30,11 @@ debug: os-image.bin kernel.elf
 	${GDB} -ex "target remote localhost:1234" -ex "symbol-file kernel.elf"
 %.o: %.c ${HEADERS}
 	/home/linuxbrew/.linuxbrew/Cellar/x86_64-elf-gcc/10.2.0/bin/x86_64-elf-gcc -g -m32 -ffreestanding -c $< -o $@ # -g for debugging
-%.o: boot/%.asm
+%.o: %.asm
 	nasm $< -f elf -o $@
 %.bin: boot/%.asm
 	nasm $< -f bin -o $@
 %.dis: %.bin
 	ndisasm -b 32 $< > $@
 clean:
-	$(RM) *.bin *.o *.dis *.elf boot/*.o boot/*.bin drivers/*.o kernel/src/*.o
+	$(RM) *.bin *.o *.dis *.elf boot/*.o boot/*.bin drivers/*.o kernel/src/*.o cpu/*.o

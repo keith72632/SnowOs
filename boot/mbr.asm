@@ -19,11 +19,12 @@ jmp $
 %include "boot/disk.asm"
 %include "boot/gdt.asm"
 %include "boot/switch-to-32bit.asm"
+%include "boot/print.asm"
 
 [bits 16]
 load_kernel:
     mov bx, KERNEL_OFFSET ; bx -> destination
-    mov dh, 15             ; dh -> num sectors
+    mov dh, 2             ; dh -> num sectors
     mov dl, [BOOT_DRIVE]  ; dl -> disk
     call disk_load
     ret
@@ -33,8 +34,8 @@ BEGIN_32BIT:
     call KERNEL_OFFSET    ;give control to the kernel
     jmp $                 ;loop in case kernel returns
 
-;boot drive variable
-BOOT_DRIVE db 0
+;boot drive variable. 0x80 hard disc
+BOOT_DRIVE db 0x80
 
 ;padding
 times 510 - ($-$$) db 0   ; this literally just fills up space

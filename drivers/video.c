@@ -27,10 +27,11 @@ void print_string(char * string)
         if(offset >= MAX_ROWS * MAX_COLS * 2){
             offset = scroll_ln(offset);
         }
-        if(string[i] == '\n'){
+        if(string[i] == '\n' || i == MAX_COLS){
             offset = move_offset_to_new_line(offset);
         }else{
             set_char_at_video_memory(string[i], offset);
+            //move offset 2 bytes to next character cell
             offset += 2;
         }
         i++;
@@ -38,18 +39,11 @@ void print_string(char * string)
     set_cursor(offset);
 }
 
-
-void write_string(int color, const char * string)
+void print_nl() 
 {
-    volatile char * video_memory = (char *)0x000b8000;
-    while(*string != 0){
-        *video_memory++ = *string++;
-        *video_memory++ = color;
-    }
+    int offset = get_cursor();
+    scroll_ln(offset);
 }
-
-
-
 
 /**********************************************************
 
@@ -90,17 +84,21 @@ int scroll_ln(int offset)
 }
 
 
-//get_cursor and set_cursor manipulate the display controllers register via I/O ports
+/*
+get_cursor and set_cursor manipulate the display controllers register via I/O ports
+cursor postion 16 bit. data register(0x3d5) will hold low byte if control register(0x3d4) is set to 15(0x0f),
+and the high byte if the value is set to 14 (0x0e). cursor offset represent video offset/2
+*/
 int get_cursor()
 {
     //write data to register 0x3d4 on port requesting byte 14, the high byte of cursor
-    port_byte_out(VGA_CTRL_REGISTER, VGA_OFFSET_HIGH);//0b1110
+    port_byte_out(VGA_CTRL_REGISTER, VGA_OFFSET_HIGH);//14 == 0b1110
     //read data from register 0x3d5 left shifter by one byte to the High Byte
     int offset = port_byte_in(VGA_DATA_REGISTER) << 8; //0b0011 -> 0000001100000000
-    //request data from register 0x3d4 requesting low byte
+    //request data from register 0x3d4 requesting low byte (15)
     port_byte_out(VGA_CTRL_REGISTER, VGA_OFFSET_LOW);//0b1111
     //add high byte and low byte togethr 
-    offset += port_byte_in(VGA_DATA_REGISTER);
+    offset += port_byte_in(VGA_DATA_REGISTER);//(786)0b1100000000 + (112)0b0001110000 = 0b1101110000
     //VGA cells consist of the character and its control data
     return offset * 2;
 }
@@ -109,11 +107,11 @@ void set_cursor(int offset)
 {
     //memory offset is double cursor offset
     offset/= 2;
-    //data from out register 0x3d4 on port 0x0e 15 0b1111
+    //request data from register 0x3d4 on port 0x0e 15 0b1111
     port_byte_out(VGA_CTRL_REGISTER, VGA_OFFSET_HIGH);
-    //data from register 0x3d5 port right shfited one byte             
+    //request data from register 0x3d5 port right shfited one byte             
     port_byte_out(VGA_DATA_REGISTER, (unsigned char)(offset >> 8));
-    //data from register 0x3d4 on port 0x0f 16 0b10000
+    //request data from register 0x3d4 on port 0x0f 16 0b10000
     port_byte_out(VGA_CTRL_REGISTER, VGA_OFFSET_LOW);
     //data from register 0c3d5 set to 0b110000
     port_byte_out(VGA_DATA_REGISTER, (unsigned char)(offset & 0xff));

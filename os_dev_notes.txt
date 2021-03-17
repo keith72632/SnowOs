@@ -1,0 +1,239 @@
+Os Development 
+
+BIOS (Basic Input Output Software)
+	-routines loaded from chip when computer is switchedon
+	-provides auto-detection for devices like screen, keyboard, etc.
+	-BIOS reads specific 512b sector of data from physical locations on disk, like 
+	Cylinder 2, Head 3, Sector 5
+	-The easiest place for BIOS to find sector is Cylinder 0, Head 0, Sector 0
+		-known as Boot Sector
+	-CPU cannot differeintiate between code and data
+	-Magic number (0xaa55)
+		-BIOS loos through each storage device and instructs CPU to first boot sector
+		with this number
+Boot Sector Coding (Actual code in boot_sect.asm)
+	-compile in .bin is binary
+	-$nasm -f bin *.asm -o *.bin
+	-$qemu-system-i386 <bin file>
+	-test by witing simple program that loops, fills rest of 512b and then magic number
+	-$ int Intel Assembly means program counter, or simply means (right here)
+	-last two byte must be magic number, so fill with prgram with 510b
+Real Mode
+	-for cross compatiblity, CPU designed to emulate 8086
+	-8086 had no memory protection (always in real mode)
+	-all CPUs initially boot in 16 bit real mode, then switch to 32 or 62 bit protected mode
+Hello Bootloader
+	-need BIOS to commuicate with screen
+Interrupts
+	-mechanisms allow CPU to temporaily hault and run some other higher-priority instruction
+	-each interrupt is a unique number that is an index to interrupt vector, a table set
+	by the BIOS at start of memory(addr 0x0) and contains pointers to ISRs.
+	-int 0x10 caused screen ISR to be invoked where as 0x03 is disk-realted I/O ISD
+	-BIOS multiplexes the ISRs by a "big switch statement" based on value set on general
+	purpose regisers , ax first, prior to interrupt
+	-naming convetion: eax=32bot, ax=16bit, ah or al=8bit
+	-Scrollig teletye BIOS routine
+		-mov ah, 0x0e
+		-mov al, <value>
+		-int 0x10
+Memory, Addresses and labels
+	-again, BIOS routines at 0x0
+	-BIOS like bootloader to be at 0x7c00
+	-memory from 0x0 to 0x100000
+		-interrupt vector table(1kb)
+		-BIOS data area(256)
+		-0x500 to 0x9fc00 is free, and boot loader should be place in this area at 0x7c00
+		-Extended BIOS data area 
+		-Video Memory
+		-BIOS 
+		-after 0x100000, free
+	-Labels can go anywhere in a program
+	-adding a value plus the offset 0x7c00 will result in a correct result, but cumbersome, so
+	[org 0x7c00] directive tells assembler where htis code should be added 
+	-when setting up stack, set base somewhere "below" 0x9fc00. 
+Defining Strings
+	-my_string:
+		db 'Booting OS'
+	-db translates to "declare bytes" which tells assemble to write subsequent bytes to binary
+	-anything in '' will be ascii
+	-strigs must have length declare
+		-one way is to null terminate
+		-ex. db 'booting os', 0
+Using Stack
+	-cannot push and pop single byte (ex. al, ah). Has to be full word
+	-bp and sp are esstially top and bottom of stack
+	-stack grows downward from base pointer, so push gets stored below
+	-when pushing and popping, values less than a word, or 16bits, will be stored in least
+	significant register. so if register bx with a char is pushed,it can be retrieved from bl
+CPU Flags Registers
+	-jumps = je(jmp equal) jne(jump not equal) jle(jump less than equal) etc
+Functions
+	-on cpu level, functions are just jumps to addresses of a rotuine then a jump back
+	-instead off jumping to function and jumping back, use call and ret
+	-call pushes return address to stack and return pops the addresss back off
+	-use pusha and popa in function to perserve registers
+Include File
+	-%include "file.path"
+	-when assembly multiple files into a binary file, just reference main file
+Reading the disk
+	-boot sector previously discussed is 512bytes at begining of disk "head 0 cyl 0 sector 0)
+	-must bootstrap rest of code from disk into memory
+	-CPU runs intital Real Mode, maximum size of registers is 16bit, which means the highest
+	addr is 0xffff, which amounts to 64kbs
+	-modern operating systems would never fit here, solution is Segmenetation
+	-Segment Registers
+		-cs, ds, ss, es
+		-main memory is divided into segments that are indexed by these registers
+		-ds = data segment. Where things like instructions and registes ar estore
+		-ss = stack segement. Base pointer stored here
+		-adjacent segment registers all overla except for 16 bytes
+		-calulate absolute address by multiplying value in segmemt register by 16 and then adds
+		offset address.
+		-since working in hexidecimal, multiplying by 16 is just leftshifting value
+			-ex. 0x42 * 16 == 0x420
+			-then add offset address, so
+				-mov ax, [0x20]
+				-absolute address would by 0x440
+		-using [org 0x7c00], assembler will do this automatically
+		-segment addressing allow coder to reach further into memory
+			-over 1mb (0xffff * 16 + 0xffff)
+Using Bios to Read Disks
+	-different storage devices require different routines
+	-floppy required coder to specifically turn on and off motor that spins disk 
+	-Hard disk BIOS routine= after rasing 0x13 interrupt(disk interrupt), set register al
+	to 0x02
+	-mov dl, 0  ;read drive 0 (first floppy drive)
+	-mov ch, 3  ;select cylinder 3
+	-mov dh, 1  ;select track on second side of floppy, 0 would be first side
+	-mov cl, 4  ;select fourth sector on the track, count base 1
+	-mov al, 5  ;read 5 sectors from the start point
+	-Then set the address that BIOS neeads to read sectors to, Bios expects to find in ES:BX
+	-mov bx, 0xa000
+	-mov es, bx
+	-mov bx, 0x1234  ;this means data will be read to 0xa000:0x1234
+	-int 0x13   ; bios interrupt to actually perfrom these tasks
+	-optional, jc disk_error
+Entering 32bit protected mode
+    -registers are extended to 32bit
+    -two additona segment registers fs, gs
+    -32bit offsets are availale, so up to 4gb(0xFFFFFFFF)
+    -different segmentation from real mode
+        -code in one segment can be prohibited from exectuing code in another
+        -CPU can impilment virtual memory for user processes, such as pages(fixed-sized chunks)
+        of a process can be swapped transparetnl between the disc and memory on as=needed basis
+    -interrupt handling is more sophisticated
+    -most establish data structure called the Global Descriptor Table(GDT)
+        -GDT defines memory segments and their protected mode attributes
+    -after GDT defined, set special bit in CPU to make the switch
+    -cant use BIOS in this mode
+    -once in 32 bit, must code own drivers fro screen, keyboard, disk drives etc
+    -it is possible to switch back and forth between real and prtoected, but this is messy
+    -display devices can either be in text mode or graphics mode
+    -when computers boot, they begin in a simple Video Graphics Array(VGA) color text mode
+    with 80x25 characters
+    -each character cell, or position on screen where character can render, is made up
+    two bytes in memory: the first is the ascii code for which character to be displayed 
+    and the second byte is the color
+    -while displayed in rows and colums, the video array is suquetional
+        -calculate column 5 row 3: 0xb8000+2*(row * 80 + col)
+    -video memory starts at 0xb8000
+        -since each char cell is represented by two byte(first byte char, second char
+        attribute), the next char cell is at 0xb8002
+Global Descriptor Table
+    -without 32 bit, the highest address you could store in 16bit register is 0xffff
+    segment descripton is an 8byte structre that defines the following properties of protected-mode
+    -base addr (32 bits), where the segment is in physical memory
+    -segment limit (20 bits), which defines the size of segment
+    -flags, affects how the cpi interprets the segments, such as privilieged, or read/write
+    -simplist workable configuatruon of segment registers is called the flat model
+        -two overlapping segments are defined that cover the full 4gb of memory
+            -one for code, one for data
+    -in addition to the code and data segments, CPU requires first entry in the GDT purposley
+    to be a null descriptor(structure of 8 zero bytes)
+        -this is essentially an iterrupt
+Making the Switch Between Real and Protected
+    -ater defining GDT, clear interrupts with cli. CPU will ignore any future interrupts
+    -then load GDT with lgdt [gdt_descriptor]
+    -to make switch, set first bit of cr0 to 0x01
+    -use piplineing to make sure of swithc
+    -do this by using far jump, which means jump to another segment
+        -to do this, do jmp <segment>:<address offset>
+Kernels
+    -compile C
+        -gcc -ffreestanding -c file.c -o file.o
+    -to disass C code, compile into object file, then use $objdump -d file.o
+    -to link object files into binary files use:
+        -$ld -o file.bin Ttext 0x0 --oformat binary file.o
+        -Ttext 0x0 works in same way as org directive, offsets label addresses
+    -to see what machine code is actuallly generated from C sourse use:
+        -$ndisasm -b 32 basic.bin > basic.dis
+    -dis file left to right
+        -offsets, machine code, assembly instructions
+    -C makes heavy use of the stack for stroing variables local to function
+        -upon entering function, base pointer is increaded to the current top of stack, 
+        creating a local stack
+			-called 'stack frame'
+    -before updating base pointer in local function, push to stack for storage
+    -C compilers will push argumnets onto stack in reverse, so first argument is on top
+Finding Way to Kernel
+	-write assembly routine to enter kernel correctly
+	-use asse,bly for kernel entry so compiler doesnt mess it up
+Drivers
+	-Internally, controller chips hace several registers that can be read, write or both
+	-the state of the registers tell the controller what to do
+	-ex. Intels 82077AA has pin 57 labeled meo that drives motor for floppy
+		-when on, motor spins
+		-think of this like peripheral from ARM
+		-select the register by address
+	-I/O buses responsible for realaying the instructions to devices
+I/O programming
+	-registers of device controllers are memory mapped seperate from main memory
+	-in and out assembly instruction use to read and write, respectivley, to these register
+	-ex. DOR register address is 0x3f2
+		mov dx, 0x3f2  ;must use dx to store port addr
+		in al, dx      ;read contents of port to al
+		or al, 00001000b ;switch on the motor bit
+		out dx, al     ;udate DOR of the device
+Direct Access Memory
+	-cpu passes job of I/O devices to direct memory access (DMA)
+Screen Driver
+	-address 0xb8000
+	-cursor is blinking line next to character cell
+Developing drivers
+	-get screen offset that maps row and column coordinates
+		-each cell holds two bytes, so calulation is (offset((row * 80(this is the width of row)+ col)* 2 = 0ffset)
+	
+Keyboard drivers
+    -keyboard connected through physical port (serial, ps/2, usb)
+    -data recived by microcotnroller
+    -keypress stored by mc inside port 0x60 and sends interrupt request IRQ 1 to programmable interrupt controller PIC
+    -PIC interrupts CPU with predefined number based on external IRQ
+    -CPU then consults the interrupt descriptor table IDT to look up respective interrupt handler to invoke
+    -after handler completes task, cpu continues where it left off
+    -Kernel init:
+        -set up correct mapping in PIC progrmambel interrupt controller so that IRQs get tranlated to actual
+        interrupts
+        -then create a valid IDT interrupt descriptor table that contains refernce to keyboard handler
+        -handler reads data from respective I/O ports and converts to text
+        -
+Interrupt Descriptor Table (IDT)
+    -256 desctiptor entries called gates
+    -each gate 8 bytes long and correspondds to exactly one interrupt number determined from position in table
+    -three types of gates, task gates, interrupt gates and trap gates
+    -interrupt and trap can invoke custom handler functions, with interrupt gates temporaily disabling hardware
+    interrupt handling during the handler ivocation, which makes it useful for processing hardware interrupts
+    -task gats cause allow using the hardware task switch mechasinm to pass control of the processor to another program
+    -interrupt gastes contain following info:
+        -offset = 32 bit offset is memoory address of the interrupt handler within resepctive code seg
+        -selector = 16 bit selector of code seg to jump when invoking handler. this is kernel code segment
+        -type = 3 bits indicatin the gate type. set to 110 as defining interrupt gate
+        -D = 1 bit indicating wether the code seg is 32 bit. in this case, set to 1
+        -DPL = 2 bits Descriptor Priviledge level indicates what priviledge is require to invoke handler
+            -set to 00
+        -P = 1 bit indictating weher the gate is active. set to 1
+        -O = some bits that always need to be set to 0 for interrupt gates
+Setting up ISRs (interrupt service routines)
+    -interrupt handlers are also know as ISRs
+    -first 32 ISRs are resevred for cpu specifc interrupts, like exceptions and faults
+    -setting these up is crucial because its only way to know if something goes wrong when mapping PIC
+    and defining IRQs later
