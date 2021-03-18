@@ -11,7 +11,7 @@ isr_common_stub:
 	mov ax, 0x10  ; kernel data segment descriptor
 	mov ds, ax    ;0x10 -> data segment
 	mov es, ax    ;0x10 -> esd
-	mov fs, ax
+	mov fs, ax    ;this esstentially loads registers_t, an argument for isr_handler 
 	mov gs, ax
 
     ; 2. Call C handler
@@ -98,6 +98,8 @@ global isr29
 global isr30
 global isr31
 
+;isr_handler will need to be called for each gate
+;push 0 byte in cases where no error, second push in int_no
 ; 0: Divide By Zero Exception
 isr0:
     push byte 0

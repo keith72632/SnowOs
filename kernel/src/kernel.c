@@ -1,3 +1,8 @@
+/*Sources:
+ * - https://github.com/cfenollosa/os-tutorial
+ * - https://en.wikipedia.org/wiki/Programmable_interrupt_controller
+ * */
+
 #include "../../drivers/video.h"
 #include "../../drivers/port.h"
 #include "../../cpu/idt.h"

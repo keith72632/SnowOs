@@ -1,6 +1,8 @@
 /*Interrupt Service Routines(ISRs)||Interrupt Handlers
  * - first 32 ISR interrut handlers are resevered for CPU specific instruction like exceptions and faults
- * - isr_handler extracts all info from the interrupt*/
+ * - isr_handler extracts all info from the interrupt
+ * - https://en.wikipedia.org/wiki/Programmable_interrupt_controller
+ * */
 
 #include "isr.h"
 #include "idt.h"
@@ -151,6 +153,11 @@ char *exception_messages[] = {
         "Reserved"
 };
 /*prints info for the interrupt, registers_t in isr.h for deets*/
+/*isr_handler essentially prints message from exception messages relative 
+ *to the int_no in registers_t *r. This function is called in interrupt.asm
+ *arguments to C function need to be on stack before calling, so each gate 
+ *needs handler. See interrupt.asm for details
+ */
 void isr_handler(registers_t *r) {
     print_string("received interrupt: ");
     char s[3];

@@ -62,7 +62,7 @@ void set_char_at_video_memory(char character, int offset)
 {
     unsigned char *vidmem = (unsigned char *)VIDEO_ADDRESS;
     vidmem[offset] = character;
-    vidmem[offset + 1] = GREEN_TEXT;
+    vidmem[offset + 1] = 0b00000010;
 }
 
 
