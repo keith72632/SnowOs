@@ -2,8 +2,9 @@
  * - first 32 ISR interrut handlers are resevered for CPU specific instruction like exceptions and faults
  * - isr_handler extracts all info from the interrupt
  * - https://en.wikipedia.org/wiki/Programmable_interrupt_controller
+ * - https://wiki.osdev.org/PIC
+ * - https://www.codeproject.com/Articles/15971/Using-Inline-Assembly-in-C-C
  * */
-
 #include "isr.h"
 #include "idt.h"
 #include "../drivers/video.h"
@@ -75,16 +76,16 @@ void isr_install() {
      * -Finally, send (OCW1)0x00 = 0b0000000000 to enable all IRQs (no masking)
      */
 
-    //ICW1
+    //ICW1(tells PIC to wait for three other input words. Mandatory)
     port_byte_out(0x20, 0x11);
     port_byte_out(0xA0, 0x11);
-    //ICW2
+    //ICW2 (vector offset)
     port_byte_out(0x21, 0x20);
     port_byte_out(0xA1, 0x28);
-    //ICW3
+    //ICW3 (tell PIC how its wired to master/slaves)
     port_byte_out(0x21, 0x04);
     port_byte_out(0xA1, 0x02);
-    //ICW4
+    //ICW4 (Gives additional info about environment)
     port_byte_out(0x21, 0x01);
     port_byte_out(0xA1, 0x01);
     //OCW1
@@ -159,12 +160,12 @@ char *exception_messages[] = {
  *needs handler. See interrupt.asm for details
  */
 void isr_handler(registers_t *r) {
-    print_string("received interrupt: ");
+    print_string("received interrupt: ", GREEN_TEXT);
     char s[3];
     int_to_string(r->int_no, s);
-    print_string(s);
+    print_string(s, GREEN_TEXT);
     print_nl();
-    print_string(exception_messages[r->int_no]);
+    print_string(exception_messages[r->int_no], 0x04);
     print_nl();
 }
 

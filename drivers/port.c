@@ -1,3 +1,7 @@
+/*Sources:
+ * - https://www.codeproject.com/Articles/15971/Using-Inline-Assembly-in-C-C
+ * */
+
 /*
     By in, what this really means data from device is coming IN to CPU. This is the euqivalent to reading from device.
     __asm__ function is in AT&T format, so reads left as source and right as destination. The info from port will be in 
@@ -5,6 +9,7 @@
 unsigned char port_byte_in(unsigned short port)
 {
 	unsigned char result;
+    /*intruction : output : input : clobbered*/
 	__asm__("in %%dx, %%al" : "=a" (result) : "d" (port));
 	return result;
 }

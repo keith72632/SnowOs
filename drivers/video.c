@@ -8,7 +8,7 @@ void write_string(int color, const char * string);
 void set_cursor(int offset);
 int get_cursor();
 int get_offset(int col, int row);
-void set_char_at_video_memory(char character, int offset);
+void set_char_at_video_memory(char character, int offset, int color);
 int get_row_from_offset(int offset);
 int move_offset_to_new_line(int offset);
 void memory_copy(char *source, char *dest, int nbytes);
@@ -21,7 +21,7 @@ void clear_screen();
 **********************************************************/
 
 
-void print_string(char * string)
+void print_string(char * string, int color)
 {
     int offset = get_cursor();
     int i = 0;
@@ -32,7 +32,7 @@ void print_string(char * string)
         if(string[i] == '\n'){
             offset = move_offset_to_new_line(offset);
         }else{
-            set_char_at_video_memory(string[i], offset);
+            set_char_at_video_memory(string[i], offset, color);
             //move offset 2 bytes to next character cell
             offset += 2;
         }
@@ -58,11 +58,11 @@ void print_nl()
 }
 
 
-void set_char_at_video_memory(char character, int offset)
+void set_char_at_video_memory(char character, int offset, int color)
 {
     unsigned char *vidmem = (unsigned char *)VIDEO_ADDRESS;
     vidmem[offset] = character;
-    vidmem[offset + 1] = 0b00000010;
+    vidmem[offset + 1] = color;
 }
 
 
@@ -77,7 +77,7 @@ int scroll_ln(int offset)
         MAX_COLS * (MAX_ROWS -1 ) * 2
     );
     for (int col = 0; col < MAX_COLS; col++){
-        set_char_at_video_memory(' ', get_offset(col, MAX_ROWS - 1));
+        set_char_at_video_memory(' ', get_offset(col, MAX_ROWS - 1), GREEN_TEXT);
     }
     return offset - 2 * MAX_COLS;
 }
@@ -118,7 +118,7 @@ void set_cursor(int offset)
 
 void clear_screen() {
     for(int i = 0; i < MAX_COLS * MAX_ROWS; i++){
-        set_char_at_video_memory(' ', i * 2);
+        set_char_at_video_memory(' ', i * 2, GREEN_TEXT);
     }
     set_cursor(get_offset(0, 0));
 }
