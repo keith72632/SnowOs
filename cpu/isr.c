@@ -1,14 +1,32 @@
+/*Interrupt Service Routines(ISRs)||Interrupt Handlers
+ * - first 32 ISR interrut handlers are resevered for CPU specific instruction like exceptions and faults
+ * - isr_handler extracts all info from the interrupt*/
+
 #include "isr.h"
 #include "idt.h"
 #include "../drivers/video.h"
 #include "../drivers/port.h"
 #include "../kernel/utils/utils.h"
 
+/*Structure of structure registers_t;
+int isr.h: typedef void (*isr_t)(registers_t *);*/
 isr_t interrupt_handlers[256];
 
-/* Can't do this with a loop because we need the address
- * of the function names */
 void isr_install() {
+    /*First 32 ISR interrupts
+     *idt[index] represents each gate
+     *These two helper fucntions will take 32 bit memory addess(IDT offset) and split it
+     *#define low_16(address) (uint16_t)((address) & 0xFFFF)  //0b1111111111111111
+     *#define high_16(address) (uint16_t)(((address) >> 16) & 0xFFFF)
+
+     *void set_idt_gate(int n, uint32_t handler) {
+     *idt[n].low_offset = low_16(handler);
+     *idt[n].sel = KERNEL_CS; //0x08 OR 0b1000
+     *idt[n].always0 = 0;
+     *idt[n].flags = 0x8E;
+     *idt[n].high_offset = high_16(handler);
+}
+     * */
     set_idt_gate(0, (uint32_t) isr0);
     set_idt_gate(1, (uint32_t) isr1);
     set_idt_gate(2, (uint32_t) isr2);
@@ -113,7 +131,7 @@ char *exception_messages[] = {
         "Reserved",
         "Reserved"
 };
-
+/*prints info for the interrupt, registers_t in isr.h for deets*/
 void isr_handler(registers_t *r) {
     print_string("received interrupt: ");
     char s[3];
@@ -128,6 +146,7 @@ void register_interrupt_handler(uint8_t n, isr_t handler) {
     interrupt_handlers[n] = handler;
 }
 
+/*This will be called in interrupt.asm*/
 void irq_handler(registers_t *r) {
     /* Handle the interrupt in a more modular way */
     if (interrupt_handlers[r->int_no] != 0) {

@@ -15,6 +15,12 @@ int start_kernel()
 	asm volatile ("sti");
 
 	print_string("Initializing Keyboard (IRQ 1).\n");
+	init_keyboard();
+
+	print_string("********************************************************************************\n");
+	print_string("**********                          SNOW OS                           **********\n");
+	print_string("********************************************************************************\n");
+	print_nl();
     return 0;
 }
 

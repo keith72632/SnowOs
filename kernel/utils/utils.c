@@ -1,11 +1,11 @@
 #include <stdint.h>
 
-void memory_copy(char *source, char *dest, int nbytes)
+void memory_copy(uint8_t *source, uint8_t *dest, uint32_t nbytes)
 {
     int i;
     //copys source to dest
     for (i = 0; i < nbytes; i++)
-        *(dest + 1) = *(source + 1);
+        *(dest + i) = *(source + i);
 }
 
 int string_length(char str[])

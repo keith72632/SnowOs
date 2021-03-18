@@ -6,11 +6,11 @@
 isr_common_stub:
     ; 1. Save CPU state
 	pusha ; Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax
-	mov ax, ds ; Lower 16-bits of eax = ds.
+	mov ax, ds ; Lower 16-bits of eax = data seg.
 	push eax ; save the data segment descriptor
 	mov ax, 0x10  ; kernel data segment descriptor
-	mov ds, ax
-	mov es, ax
+	mov ds, ax    ;0x10 -> data segment
+	mov es, ax    ;0x10 -> esd
 	mov fs, ax
 	mov gs, ax
 

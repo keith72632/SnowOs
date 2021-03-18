@@ -2,6 +2,7 @@
 #include "video.h"
 #include "port.h"
 #include "../kernel/utils/utils.h"
+#include <stdint.h>
 
 void write_string(int color, const char * string);
 void set_cursor(int offset);
@@ -28,7 +29,7 @@ void print_string(char * string)
         if(offset >= MAX_ROWS * MAX_COLS * 2){
             offset = scroll_ln(offset);
         }
-        if(string[i] == '\n' || i == MAX_COLS){
+        if(string[i] == '\n'){
             offset = move_offset_to_new_line(offset);
         }else{
             set_char_at_video_memory(string[i], offset);
@@ -40,11 +41,6 @@ void print_string(char * string)
     set_cursor(offset);
 }
 
-void print_nl() 
-{
-    int offset = get_cursor();
-    scroll_ln(offset);
-}
 
 /**********************************************************
 
@@ -52,6 +48,14 @@ void print_nl()
 
 **********************************************************/
 
+void print_nl() 
+{
+    int offset = move_offset_to_new_line(get_cursor());
+    if(offset >= MAX_ROWS * MAX_COLS * 2){
+        offset = scroll_ln(offset);
+    }
+    set_cursor(offset);
+}
 
 
 void set_char_at_video_memory(char character, int offset)
@@ -68,8 +72,8 @@ void set_char_at_video_memory(char character, int offset)
 int scroll_ln(int offset)
 {
     memory_copy(
-        (char *)(get_offset(0, 1) + VIDEO_ADDRESS),
-        (char *)(get_offset(0, 0) + VIDEO_ADDRESS),
+        (uint8_t *)(get_offset(0, 1) + VIDEO_ADDRESS),
+        (uint8_t *)(get_offset(0, 0) + VIDEO_ADDRESS),
         MAX_COLS * (MAX_ROWS -1 ) * 2
     );
     for (int col = 0; col < MAX_COLS; col++){
@@ -87,11 +91,11 @@ and the high byte if the value is set to 14 (0x0e). cursor offset represent vide
 int get_cursor()
 {
     //write data to register 0x3d4 on port requesting byte 14, the high byte of cursor
-    port_byte_out(VGA_CTRL_REGISTER, VGA_OFFSET_HIGH);//14 == 0b1110
+    port_byte_out(VGA_CTRL_REGISTER, 0b1110);//14 == 0b1110
     //read data from register 0x3d5 left shifter by one byte to the High Byte
     int offset = port_byte_in(VGA_DATA_REGISTER) << 8; //0b0011 -> 0000001100000000
     //request data from register 0x3d4 requesting low byte (15)
-    port_byte_out(VGA_CTRL_REGISTER, VGA_OFFSET_LOW);//0b1111
+    port_byte_out(VGA_CTRL_REGISTER, 0b1111);//0b1111
     //add high byte and low byte togethr 
     offset += port_byte_in(VGA_DATA_REGISTER);//(786)0b1100000000 + (112)0b0001110000 = 0b1101110000
     //VGA cells consist of the character and its control data
@@ -102,12 +106,12 @@ void set_cursor(int offset)
 {
     //memory offset is double cursor offset
     offset/= 2;
-    //request data from register 0x3d4 on port 0x0e 15 0b1111
-    port_byte_out(VGA_CTRL_REGISTER, VGA_OFFSET_HIGH);
+    //request data from register 0x3d4 on port 0x0e 14 0b1110
+    port_byte_out(VGA_CTRL_REGISTER, 0b1110);
     //request data from register 0x3d5 port right shfited one byte             
     port_byte_out(VGA_DATA_REGISTER, (unsigned char)(offset >> 8));
-    //request data from register 0x3d4 on port 0x0f 16 0b10000
-    port_byte_out(VGA_CTRL_REGISTER, VGA_OFFSET_LOW);
+    //request data from register 0x3d4 on port 0x0f 15 0b1111
+    port_byte_out(VGA_CTRL_REGISTER, 0b1111);
     //data from register 0c3d5 set to 0b110000
     port_byte_out(VGA_DATA_REGISTER, (unsigned char)(offset & 0xff));
 }
@@ -132,7 +136,6 @@ int get_row_from_offset(int offset)
 {
     return offset / (2 * MAX_COLS);
 }
-
 
 
 int move_offset_to_new_line(int offset)

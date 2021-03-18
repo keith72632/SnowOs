@@ -14,5 +14,6 @@
 void print_string(char * string);
 void clear_screen();
 void print_nl();
+int scroll_ln(int offset);
 
 #endif
