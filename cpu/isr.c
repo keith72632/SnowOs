@@ -8,7 +8,7 @@
 #include "../drivers/port.h"
 #include "../kernel/utils/utils.h"
 
-/*Structure of structure registers_t;
+/*Array of structure registers_t;
 int isr.h: typedef void (*isr_t)(registers_t *);*/
 isr_t interrupt_handlers[256];
 
@@ -26,7 +26,8 @@ void isr_install() {
      *idt[n].flags = 0x8E;
      *idt[n].high_offset = high_16(handler);
 }
-     * */
+     *This x86 system, the 8259 Programmable Interrupt Controller is responsibles for hardware interrupts
+     *  */
     set_idt_gate(0, (uint32_t) isr0);
     set_idt_gate(1, (uint32_t) isr1);
     set_idt_gate(2, (uint32_t) isr2);
@@ -60,19 +61,36 @@ void isr_install() {
     set_idt_gate(30, (uint32_t) isr30);
     set_idt_gate(31, (uint32_t) isr31);
 
-    // Remap the PIC
+    /* Remap the PIC 
+     *Primary PIC: port 0x20 is command and 0x21 is data
+     *Secondary PIC  uses ports 0xA0(command) and 0xA1(data)
+     *This programming happens by sending four command words (ICWs)
+     *Then wait for the followign three inputs on the data ports:
+     * -ICW2(IDT offset) will be set to 0x20 (32) for primary and 0x28 for secondary
+     * -ICW3(wiring between PICs) tels primary PIC to accept IRQs from from secondary PIC on IRQ2 (0x04, 0b00000100)
+     *      -secondary PIC will be marked as secodar by setting 0x02 = 0b00000010
+     * -ICW4(mode) set 0x01 = 0b00000001 in order to enebale 8086 mode
+     * -Finally, send (OCW1)0x00 = 0b0000000000 to enable all IRQs (no masking)
+     */
+
+    //ICW1
     port_byte_out(0x20, 0x11);
     port_byte_out(0xA0, 0x11);
+    //ICW2
     port_byte_out(0x21, 0x20);
     port_byte_out(0xA1, 0x28);
+    //ICW3
     port_byte_out(0x21, 0x04);
     port_byte_out(0xA1, 0x02);
+    //ICW4
     port_byte_out(0x21, 0x01);
     port_byte_out(0xA1, 0x01);
+    //OCW1
     port_byte_out(0x21, 0x0);
     port_byte_out(0xA1, 0x0);
 
-    // Install the IRQs
+    // Install the IRQs (interrupt requests)Conncects secondary chip to primary
+    //Extension of the IDT by adding gates for IRQ 0-15
     set_idt_gate(32, (uint32_t)irq0);
     set_idt_gate(33, (uint32_t)irq1);
     set_idt_gate(34, (uint32_t)irq2);
@@ -89,7 +107,8 @@ void isr_install() {
     set_idt_gate(45, (uint32_t)irq13);
     set_idt_gate(46, (uint32_t)irq14);
     set_idt_gate(47, (uint32_t)irq15);
-
+    /*Then is interrupt.asm, push these IRQs number as weill as the interrupt to stack before calling irq_common_stub
+     *Then call irq_handler*/
     load_idt(); // Load with ASM
 }
 
@@ -146,7 +165,10 @@ void register_interrupt_handler(uint8_t n, isr_t handler) {
     interrupt_handlers[n] = handler;
 }
 
-/*This will be called in interrupt.asm*/
+/*This will be called in interrupt.asm
+ *retrieve resective hadnler from the array based on the interrupt number invoked with the given registers_t
+ *PIC protocol stats we must send an end of interrupt(EOI) command to the invovled PICs(only primary for IRQ 0-7, both for IRQ 8-15)
+ required for the PIC to know that the interrupt is handled and can send further interrupts*/
 void irq_handler(registers_t *r) {
     /* Handle the interrupt in a more modular way */
     if (interrupt_handlers[r->int_no] != 0) {
