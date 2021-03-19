@@ -1,4 +1,4 @@
-/*Interrupt Service Routines(ISRs)||Interrupt Handlers
+/*Interrupt Service Routines(ISRs)||Interrupt Handlers for 8259
  * - first 32 ISR interrut handlers are resevered for CPU specific instruction like exceptions and faults
  * - isr_handler extracts all info from the interrupt
  * - https://en.wikipedia.org/wiki/Programmable_interrupt_controller
@@ -185,7 +185,17 @@ void irq_handler(registers_t *r) {
         handler(r);
     }
 
-    // EOI
+    /*PIC has two interrupt status registers. In-Service Register (ISR) and the Interrupt Request Register(IRR) 
+     * - ISR tells which interrupts are being serviced, meaning IRQs sent to the CPU
+     * - The IRR tells us which interruts have been rasied
+     * - IRR send interrupts to CPU, then marked in the ISR
+     * - ISR and IRR can be read via the OCW3 command word sent to either Master(0x20) or Slave(0xA0)
+     * -read ISR or IRR, write command to COMMAND port, not the data port
+     * - read IRR, write 0x0a
+     * - read ISR, write 0x0b*/
+
+    /* After every interrupt we need to send an EOI to the PICs
+     * or they will not send another interrupt again */
     if (r->int_no >= 40) {
         port_byte_out(0xA0, 0x20); /* follower */
     }
