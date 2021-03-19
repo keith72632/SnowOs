@@ -77,20 +77,21 @@ void isr_install() {
      */
 
     //ICW1(tells PIC to wait for three other input words. Mandatory)
-    port_byte_out(0x20, 0x11);
+    port_byte_out(0x20, 0x11); //starts intitalization in cascade mode
     port_byte_out(0xA0, 0x11);
     //ICW2 (vector offset)
-    port_byte_out(0x21, 0x20);
-    port_byte_out(0xA1, 0x28);
+    port_byte_out(0x21, 0x20);//ICW2 Master PIC offset
+    port_byte_out(0xA1, 0x28);//ICW2 Slace PIC offset
     //ICW3 (tell PIC how its wired to master/slaves)
-    port_byte_out(0x21, 0x04);
-    port_byte_out(0xA1, 0x02);
+    port_byte_out(0x21, 0x04); //Tell master there is slave PIC at IRQ2
+    port_byte_out(0xA1, 0x02); //Tell slave PIC its cascade identity
     //ICW4 (Gives additional info about environment)
     port_byte_out(0x21, 0x01);
     port_byte_out(0xA1, 0x01);
-    //OCW1
+    //OCW1 (operational command word) enable all IRQs
     port_byte_out(0x21, 0x0);
     port_byte_out(0xA1, 0x0);
+    /*To disable PIC, write 0xff to both master and slave*/
 
     // Install the IRQs (interrupt requests)Conncects secondary chip to primary
     //Extension of the IDT by adding gates for IRQ 0-15
