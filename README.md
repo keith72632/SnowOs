@@ -75,5 +75,7 @@ All Sources
         https://whatis.techtarget.com/definition/BIOS-basic-input-output-system
     Interrupts Explained:
         https://alex.dzyoba.com/blog/os-interrupts/
+    Typedef Function Pointers:
+        https://riptutorial.com/c/example/31818/typedef-for-function-pointers
     Additional Learning:
         http://himmele.blogspot.com/2011/07/build-your-own-operating-system.html

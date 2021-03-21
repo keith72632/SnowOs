@@ -181,7 +181,9 @@ void register_interrupt_handler(uint8_t n, isr_t handler) {
  required for the PIC to know that the interrupt is handled and can send further interrupts*/
 void irq_handler(registers_t *r) {
     /* Handle the interrupt in a more modular way */
+    
     if (interrupt_handlers[r->int_no] != 0) {
+        /*this creates a void function called handler that sets the interrut based on its int_no into array interrupt_handlers[]*/
         isr_t handler = interrupt_handlers[r->int_no];
         handler(r);
     }

@@ -4,6 +4,7 @@
 #define lower_16(handler) (uint16_t)((handler) & 0xffff)
 #define higher_16(handler) (uint16_t)(((handler) >> 16) &0xffff)
 
+
 typedef struct{
     uint16_t low;
     uint16_t selector;
@@ -25,6 +26,28 @@ typedef struct {
     uint32_t eip, cs, eflags, useresp, ss; 
 } registers_t;
 
+typedef void (*array_t)(registers_t *);
+
+array_t handlers[5];
+
+void test_callback()
+{
+    printf("Call back function");
+}
+
+void register_bullshit_handler(uint8_t n, array_t handler)
+{
+    handlers[n] = handler;
+}
+
+void bullshit_handler(registers_t *reg)
+{
+    register_bullshit_handler(0, test_callback);
+    array_t handler = handlers[reg->int_no];
+    handler(reg);
+    
+    printf("Handler(reg): %d\n", reg->int_no);
+}
 
 extern void temp1();
 extern void temp2();
@@ -36,8 +59,7 @@ void handler_fun(registers_t *reg){
 
     printf("edi:           %d\n", reg->edi);
     printf("esi:           %d\n", reg->esi);
-    printf("\n");
-    /*
+
     printf("ebp:           %d\n", reg->ebp);
     printf("esp:           %d\n", reg->esp);
     printf("ebx:           %d\n", reg->ebx);
@@ -55,7 +77,14 @@ void handler_fun(registers_t *reg){
     printf("eflags:        %d\n", reg->eflags);
     printf("useresp:       %d\n", reg->useresp);
     printf("ss:            %d\n", reg->ss);
-*/
+    printf("\n\n");
+
+    register_bullshit_handler(0, test_callback);
+    array_t handler = handlers[reg->int_no];
+    handler(reg);
+
+    printf("Handler(reg): %d\n", reg->int_no);
+
 
 }
 
