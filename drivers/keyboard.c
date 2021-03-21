@@ -201,5 +201,12 @@ static void keyboard_callback(registers_t *regs) {
 }
 
 void init_keyboard() {
+    /*First arg is index of gate(33) and second is irs_t handler function*/
     register_interrupt_handler(IRQ1, keyboard_callback);
 }
+
+/*register_interrupt_handler takes function pointer as its second argument, so
+ *when kernel calls init_keyboard(), the function that the second argument function 
+ *pointer points to is registered(keyboard_callback will registered in the array
+ *interrupt_handlers(type isr_t) at irq1)
+ */

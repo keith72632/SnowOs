@@ -1,4 +1,4 @@
-OBJECTS = func.o main.o
+OBJECTS = inter.o main.o
 CC = gcc
 CFLAGS = -std=c11 -m32 -Wall -Wextra -Werror -c
 AS = nasm

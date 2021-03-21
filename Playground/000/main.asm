@@ -2,6 +2,7 @@ global main
 extern add_print
 
 section .text
+
 main:
 	; int eax = add_print(1, 2); // => 3
 	push dword 2

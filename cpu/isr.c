@@ -171,6 +171,7 @@ void isr_handler(registers_t *r) {
 }
 
 void register_interrupt_handler(uint8_t n, isr_t handler) {
+    /*Each gate into a handler(ISR)*/
     interrupt_handlers[n] = handler;
 }
 
