@@ -161,12 +161,12 @@ char *exception_messages[] = {
  *needs handler. See interrupt.asm for details
  */
 void isr_handler(registers_t *r) {
-    print_string("received interrupt: ", GREEN_TEXT);
+    print_string("received interrupt: ");
     char s[3];
     int_to_string(r->int_no, s);
-    print_string(s, GREEN_TEXT);
+    print_string(s);
     print_nl();
-    print_string(exception_messages[r->int_no], 0x04);
+    print_string(exception_messages[r->int_no]);
     print_nl();
 }
 

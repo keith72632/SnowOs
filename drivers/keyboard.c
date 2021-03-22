@@ -43,14 +43,13 @@ static void keyboard_callback(registers_t *regs) {
         }
     }else if(scancode == ENTER){
         print_nl();
-        print_string(key_buffer, GREEN_TEXT);
         execute_command(key_buffer);
         key_buffer[0] = '\0';
     }else{
         char letter = scancode_to_char[(int)scancode];
         char str[2] = {letter, '\0'};
         append(key_buffer, letter);
-        print_string(str, GREEN_TEXT);
+        print_string(str);
     }
 }
 

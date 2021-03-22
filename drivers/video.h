@@ -11,7 +11,7 @@
 #define WHITE_ON_BLACK 0x0f
 #define GREEN_TEXT 0x02
 
-void print_string(char * string, int color);
+void print_string(char * string);
 void clear_screen();
 void print_nl();
 int scroll_ln(int offset);

@@ -21,7 +21,7 @@ void clear_screen();
 **********************************************************/
 
 
-void print_string(char * string, int color)
+void print_string(char * string)
 {
     int offset = get_cursor();
     int i = 0;
@@ -32,7 +32,7 @@ void print_string(char * string, int color)
         if(string[i] == '\n'){
             offset = move_offset_to_new_line(offset);
         }else{
-            set_char_at_video_memory(string[i], offset, color);
+            set_char_at_video_memory(string[i], offset, GREEN_TEXT);
             //move offset 2 bytes to next character cell
             offset += 2;
         }
