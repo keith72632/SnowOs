@@ -2,8 +2,8 @@
 # $< = first dependency
 # $^ = all dependecny
 
-C_SOURCES = $(wildcard kernel/src/*.c drivers/*.c cpu/*.c kernel/utils/*.c)
-HEADERS = $(wildcard drivers/*.h cpu/*.h kernel/utils/*.h) cpu/isr.h
+C_SOURCES = $(wildcard kernel/src/*.c drivers/*.c cpu/*.c kernel/utils/*.c shell/*.c)
+HEADERS = $(wildcard drivers/*.h cpu/*.h kernel/utils/*.h shell/*.h) cpu/isr.h
 OBJ_FILES = ${C_SOURCES:.c=.o cpu/interrupt.o}
 GDB = /home/linuxbrew/.linuxbrew/Cellar/i386-elf-gdb/10.1/bin/i386-elf-gdb
 LINK = /home/linuxbrew/.linuxbrew/Cellar/x86_64-elf-binutils/2.36.1/bin/x86_64-elf-ld
@@ -40,4 +40,4 @@ debug: os-image.bin kernel.elf
 %.dis: %.bin
 	ndisasm -b 32 $< > $@
 clean:
-	$(RM) *.bin *.o *.dis *.elf boot/*.o boot/*.bin drivers/*.o kernel/src/*.o cpu/*.o
+	$(RM) *.bin *.o *.dis *.elf boot/*.o boot/*.bin drivers/*.o kernel/src/*.o cpu/*.o shell/*.o

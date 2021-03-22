@@ -3,6 +3,24 @@
 #include "../cpu/isr.h"
 #include "video.h"
 #include "../kernel/utils/utils.h"
+#include "../shell/string.h"
+
+#define SC_MAX 57
+
+static char key_buffer[256];
+
+const char scancode_to_char[] = {
+  '?', '?', '1', '2', '3', '4', '5',
+  '6', '7', '8', '9', '0', '-', '=',
+  '?', '?', 'Q', 'W', 'E', 'R', 'T',
+  'Y', 'U', 'I', 'O', 'P', '[', ']',
+  '?', '?', 'A', 'S', 'D', 'F', 'G',
+  'H', 'J', 'K', 'L', ';', '\'', '`',
+  '?', '\\', 'Z', 'X', 'C', 'V', 'B',
+  'N', 'M', ',', '.', '/', '?', '?',
+  '?', ' '
+};
+
 
 void print_letter(uint8_t scancode) {
     switch (scancode) {
@@ -196,8 +214,13 @@ void print_letter(uint8_t scancode) {
 
 static void keyboard_callback(registers_t *regs) {
     uint8_t scancode = port_byte_in(0x60);
-    print_letter(scancode);
-    print_nl();
+
+    if(scancode > SC_MAX) return;
+
+    char letter = scancode_to_char[(int)scancode];
+    append(key_buffer, letter);
+    char str[2] = {letter, '\0'};
+    print_string(str, GREEN_TEXT);
 }
 
 void init_keyboard() {

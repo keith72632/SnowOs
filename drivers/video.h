@@ -15,5 +15,11 @@ void print_string(char * string, int color);
 void clear_screen();
 void print_nl();
 int scroll_ln(int offset);
+void set_char_at_video_memory(char character, int offset, int color);
+int get_cursor();
+void set_cursor(int offset);
+
+
+
 
 #endif
