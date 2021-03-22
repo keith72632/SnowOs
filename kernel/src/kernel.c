@@ -28,6 +28,7 @@ int start_kernel()
 	print_string("**********                          SNOW OS                           **********\n", GREEN_TEXT);
 	print_string("********************************************************************************\n", GREEN_TEXT);
 	print_nl();
+	print_string(">", GREEN_TEXT);
     return 0;
 }
 /*isr_install->set_idt_gates(index of gate, pointer to function implememnted in asm(isr_n)->sets a couple bytes in assembly then jumps to top of file and calls isr_handler->
