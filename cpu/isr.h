@@ -139,6 +139,8 @@ typedef struct {
 
 void isr_install();
 
+void irq_install();
+
 void isr_handler(registers_t *r);
 
 /*array of stcuture pointer containing registers*/

@@ -8,11 +8,10 @@ void memory_copy(uint8_t *source, uint8_t *dest, uint32_t nbytes)
         *(dest + i) = *(source + i);
 }
 
-int string_length(char str[])
+int string_length(char s[])
 {
     int i;
-    while(str[i] != '\0') ++i;
-    return i;
+    for(i = 0; s[i] != '\0'; i++) return i;
 }
 
 void reverse(char str[])

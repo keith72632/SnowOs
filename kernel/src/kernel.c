@@ -12,17 +12,14 @@
 
 int start_kernel()
 {
-	short temp;
-	temp = 32;
     clear_screen();
 	print_string("Installing interrupt service routines (ISRs).\n");
 	isr_install();
+	irq_install();
 
 	print_string("Enabling external interrupts.\n");
-	asm volatile ("sti");
 
 	print_string("Initializing Keyboard (IRQ 1).\n");
-	init_keyboard();
 
 	print_string("********************************************************************************\n");
 	print_string("**********                          SNOW OS                           **********\n");

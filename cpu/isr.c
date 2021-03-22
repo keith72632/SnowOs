@@ -10,6 +10,8 @@
 #include "../drivers/video.h"
 #include "../drivers/port.h"
 #include "../kernel/utils/utils.h"
+#include "../drivers/keyboard.h"
+#include "timer.h"
 
 /*Array of structure registers_t;
 int isr.h: typedef void (*isr_t)(registers_t *);*/
@@ -203,4 +205,14 @@ void irq_handler(registers_t *r) {
         port_byte_out(0xA0, 0x20); /* follower */
     }
     port_byte_out(0x20, 0x20); /* leader */
+}
+
+void irq_install()
+{
+    /*Enabler interrupts*/
+    asm volatile("sti");
+    /*IRQ0: times*/
+    init_timer(50);
+    /*IRQ1: keyboard*/
+    init_keyboard();
 }

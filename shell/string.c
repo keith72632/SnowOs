@@ -3,11 +3,11 @@
 #include "../kernel/utils/utils.h"
 
 
-void append(char s[], char n)
+void append(char s[], char n, short *index)
 {
-    int len = string_length(s);
-    s[len] = n;
-    s[len + 1] = '\0';
+    s[*index] = n;
+    s[*index + 1] = '\0';
+    *index+=1;
 }
 
 bool backspace(char buffer[])
@@ -38,12 +38,12 @@ int compare_string(char s1[], char s2[]) {
 
 void execute_command(char *input)
 {
-    if(compare_string(input, "E") == 0){
+    if(compare_string(input, "EXIT") == 0){
         print_string("Stopping the CPU. Bye\n");
         asm volatile("hlt");
         print_string("this should be haulting\n");
     }
-    print_string("Unkown Command");
+    print_string("Unkown Command: ");
     print_string(input);
     print_string("\n>");
 }

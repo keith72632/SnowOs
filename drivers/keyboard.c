@@ -4,12 +4,15 @@
 #include "video.h"
 #include "../kernel/utils/utils.h"
 #include "../shell/string.h"
+#include "../shell/function.h"
 
 #define SC_MAX 57
-#define BACKSPACE 0x0e
-#define ENTER 0x1c
+#define BACKSPACE 0x0E
+#define ENTER 0x1C
 
 static char key_buffer[256];
+short ctr = 0;
+
 
 const char scancode_to_char[] = {
   '?', '?', '1', '2', '3', '4', '5',
@@ -23,13 +26,6 @@ const char scancode_to_char[] = {
   '?', ' '
 };
 
-
-void clear_buffer(char str[])
-{
-    for(int i = 0; i < string_length(str); i++){
-        str[i] = '\0';
-    }
-}
 
 
 static void keyboard_callback(registers_t *regs) {
@@ -45,12 +41,14 @@ static void keyboard_callback(registers_t *regs) {
         print_nl();
         execute_command(key_buffer);
         key_buffer[0] = '\0';
+        ctr = 0;
     }else{
         char letter = scancode_to_char[(int)scancode];
+        append(key_buffer, letter, &ctr);
         char str[2] = {letter, '\0'};
-        append(key_buffer, letter);
         print_string(str);
     }
+    UNUSED(regs);
 }
 
 void init_keyboard() {
