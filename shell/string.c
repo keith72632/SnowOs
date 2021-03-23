@@ -24,8 +24,11 @@ bool backspace(char buffer[])
 void print_backspace() 
 {
     int newCursor = get_cursor() -2;
-    set_char_at_video_memory(' ', newCursor, GREEN_TEXT);
-    set_cursor(newCursor);
+    char character = get_char_from_video_memory(newCursor);
+    if(character != '>'){
+        set_char_at_video_memory(' ', newCursor, GREEN_TEXT);
+        set_cursor(newCursor);
+    }
 }
 
 int compare_string(char s1[], char s2[]) {

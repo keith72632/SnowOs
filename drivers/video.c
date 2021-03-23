@@ -65,6 +65,12 @@ void set_char_at_video_memory(char character, int offset, int color)
     vidmem[offset + 1] = color;
 }
 
+char get_char_from_video_memory(int offset)
+{
+    unsigned char *vidmem = (unsigned char *)VIDEO_ADDRESS;
+    return vidmem[offset];
+}
+
 
 //scrolling. move rows up by one except first row. fill last row with blanks. correct offset
 

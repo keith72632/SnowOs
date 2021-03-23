@@ -37,11 +37,11 @@ static void keyboard_callback(registers_t *regs) {
     if(scancode > SC_MAX) return;
 
     if(scancode == BACKSPACE){
-       // if(backspace(key_buffer)){
+        if(key_buffer[0] != '\0'){
             print_backspace();
             ctr -=1;
             key_buffer[ctr] = '\0';
-        //}
+        }
     }else if(scancode == ENTER){
         print_nl();
         execute_command(key_buffer);

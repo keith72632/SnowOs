@@ -3,12 +3,15 @@
  * - https://en.wikipedia.org/wiki/Programmable_interrupt_controller
  * */
 
+#include <stdint.h>
+
 #include "../../drivers/video.h"
 #include "../../drivers/port.h"
 #include "../../cpu/idt.h"
 #include "../../cpu/isr.h"
 #include "../../cpu/timer.h"
 #include "../../drivers/keyboard.h"
+
 
 int start_kernel()
 {
@@ -20,6 +23,8 @@ int start_kernel()
 	print_string("Enabling external interrupts.\n");
 
 	print_string("Initializing Keyboard (IRQ 1).\n");
+
+	clear_screen();
 
 	print_string("********************************************************************************\n");
 	print_string("**********                          SNOW OS                           **********\n");
