@@ -42,8 +42,13 @@ void execute_command(char *input)
         print_string("Stopping the CPU. Bye\n");
         asm volatile("hlt");
         print_string("this should be haulting\n");
+    } else if(compare_string(input, "WHOAMI")==0){
+        print_string("User: Keith\n");
+        print_string(">");
+    }else{
+        print_string("Unkown Command: ");
+        print_string(input);
+        print_string("\n>");
     }
-    print_string("Unkown Command: ");
-    print_string(input);
-    print_string("\n>");
+
 }

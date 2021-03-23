@@ -11,6 +11,8 @@
 #define ENTER 0x1C
 
 static char key_buffer[256];
+/*ctr is the index used for key_buffer. Then increments after every character append so next character will be added after key press.
+ *after each append, incremented ctr is used to set next value in keybuffer to NULL (\0) */
 short ctr = 0;
 
 
@@ -30,13 +32,16 @@ const char scancode_to_char[] = {
 
 static void keyboard_callback(registers_t *regs) {
     uint8_t scancode = port_byte_in(0x60);
+    int len = string_length(key_buffer);
 
     if(scancode > SC_MAX) return;
 
     if(scancode == BACKSPACE){
-        if(backspace(key_buffer)){
+       // if(backspace(key_buffer)){
             print_backspace();
-        }
+            ctr -=1;
+            key_buffer[ctr] = '\0';
+        //}
     }else if(scancode == ENTER){
         print_nl();
         execute_command(key_buffer);
@@ -45,6 +50,7 @@ static void keyboard_callback(registers_t *regs) {
     }else{
         char letter = scancode_to_char[(int)scancode];
         append(key_buffer, letter, &ctr);
+        key_buffer[ctr] = '\0';
         char str[2] = {letter, '\0'};
         print_string(str);
     }
