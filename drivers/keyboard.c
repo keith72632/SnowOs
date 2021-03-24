@@ -5,6 +5,7 @@
 #include "../kernel/utils/utils.h"
 #include "../shell/string.h"
 #include "../shell/function.h"
+#include "../shell/commands.h"
 
 #define SC_MAX 57
 #define BACKSPACE 0x0E

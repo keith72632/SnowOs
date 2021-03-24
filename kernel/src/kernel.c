@@ -11,6 +11,7 @@
 #include "../../cpu/isr.h"
 #include "../../cpu/timer.h"
 #include "../../drivers/keyboard.h"
+#include "../utils/memalloc.h"
 
 
 int start_kernel()
@@ -25,6 +26,7 @@ int start_kernel()
 	print_string("Initializing Keyboard (IRQ 1).\n");
 
 	clear_screen();
+
 
 	print_string("********************************************************************************\n");
 	print_string("**********                          SNOW OS                           **********\n");

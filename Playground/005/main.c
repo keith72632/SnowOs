@@ -1,19 +1,26 @@
-/************************************************************
- *Using a doubly linked list, which contains size, if area is use, and 
- *pointer to prev and next element.
- *Must find smallest area possible to keep from fracturing too much memory
- *use O(n), where n is the number of elements in list
- *contains 16 byte list elemtn indicating the remaining bytes are free
- *************************************************************/
-
 #include <stdbool.h>
 #include <stdint.h>
 #include <stddef.h>
-#include "memalloc.h"
+#include <stdio.h>
+
+typedef struct dynamic_mem_node {
+    uint32_t size;
+    bool used;
+    struct dynamic_mem_node *next;
+    struct dynamic_mem_node *prev;
+} dynamic_mem_node_t;
 
 #define NULL_POINTER ((void*)0)
 #define DYNAMIC_MEM_TOTAL_SIZE 4*1024
 #define DYNAMIC_MEM_NODE_SIZE sizeof(dynamic_mem_node_t) // 16
+
+void init_dynamic_mem();
+void *find_best_mem_block(dynamic_mem_node_t *dynamic_mem, size_t size);
+void *mem_alloc(size_t size);
+void mem_free(void *p);
+void *merge_next_node_into_current(dynamic_mem_node_t *current_mem_node);
+void *merge_current_node_into_previous(dynamic_mem_node_t *current_mem_node);
+
 
 static uint8_t dynamic_mem_area[DYNAMIC_MEM_TOTAL_SIZE];
 static dynamic_mem_node_t *dynamic_mem_start;
@@ -25,25 +32,25 @@ void init_dynamic_mem() {
     dynamic_mem_start->prev = NULL_POINTER;
 }
 
-void *find_best_mem_block(dynamic_mem_node_t *dynamic_mem, size_t size)
-{
-    //Initialize the result pointer with NULL and an invalid block size
+
+void *find_best_mem_block(dynamic_mem_node_t *dynamic_mem, size_t size) {
+    // initialize the result pointer with NULL and an invalid block size
     dynamic_mem_node_t *best_mem_block = (dynamic_mem_node_t *) NULL_POINTER;
     uint32_t best_mem_block_size = DYNAMIC_MEM_TOTAL_SIZE + 1;
 
-    //start looking for the best (smallest unused) block at the beginning
+    // start looking for the best (smallest unused) block at the beginning
     dynamic_mem_node_t *current_mem_block = dynamic_mem;
-    while(current_mem_block){
-        //check if block can be used and is smaller than current best
+    while (current_mem_block) {
+        // check if block can be used and is smaller than current best
         if ((!current_mem_block->used) &&
-        (current_mem_block->size >= (size + DYNAMIC_MEM_NODE_SIZE))&&
-        (current_mem_block->size <= best_mem_block_size)) {
-        // update best block
-        best_mem_block = current_mem_block;
-        best_mem_block_size = current_mem_block->size;
+            (current_mem_block->size >= (size + DYNAMIC_MEM_NODE_SIZE)) &&
+            (current_mem_block->size <= best_mem_block_size)) {
+            // update best block
+            best_mem_block = current_mem_block;
+            best_mem_block_size = current_mem_block->size;
         }
 
-        //move to next block
+        // move to next block
         current_mem_block = current_mem_block->next;
     }
     return best_mem_block;
@@ -80,6 +87,7 @@ void *mem_alloc(size_t size) {
     return NULL_POINTER;
 }
 
+
 void mem_free(void *p) {
     // move along, nothing to free here
     if (p == NULL_POINTER) {
@@ -101,6 +109,7 @@ void mem_free(void *p) {
     current_mem_node = merge_next_node_into_current(current_mem_node);
     merge_current_node_into_previous(current_mem_node);
 }
+
 
 void *merge_next_node_into_current(dynamic_mem_node_t *current_mem_node) {
     dynamic_mem_node_t *next_mem_node = current_mem_node->next;
@@ -131,6 +140,19 @@ void *merge_current_node_into_previous(dynamic_mem_node_t *current_mem_node) {
             current_mem_node->next->prev = prev_mem_node;
         }
     }
+}
+
+
+int main()
+{   
+    int n = 5;              
+    int *ptr = (int *) mem_alloc(n * sizeof(int));
+    for (int i = 0; i < n; ++i) {
+        ptr[i] = i+1; // shorthand for *(ptr + i)
+    }
+    mem_free(ptr);
+
+    return 0;
 }
 
 
