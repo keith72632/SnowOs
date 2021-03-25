@@ -32,7 +32,7 @@ void print_string(char * string)
         if(string[i] == '\n'){
             offset = move_offset_to_new_line(offset);
         }else{
-            set_char_at_video_memory(string[i], offset, GREEN_TEXT);
+            set_char_at_video_memory(string[i], offset, COLOR);
             //move offset 2 bytes to next character cell
             offset += 2;
         }

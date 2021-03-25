@@ -15,7 +15,7 @@ all: run
 kernel.bin: kernel_entry.o ${OBJ_FILES}
 	${LINK} -m elf_i386 -o $@ -Ttext 0x1000 $^ --oformat binary
 kernel_entry.o: boot/kernel_entry.asm
-	nasm $< -f elf -o $@
+	nasm $< -felf32 -o $@
 kernel.o: kernel/src/kernel.c 
 	gcc -fno-pie -m32 -ffreestanding -c $< -o $@
 mbr.bin: boot/mbr.asm
@@ -25,6 +25,11 @@ os-image.bin: mbr.bin kernel.bin
 #-fda before bin file to set dl 0x00, -boot after bin file to set dl as 0x80
 run: os-image.bin
 	qemu-system-i386 -fda $<
+iso: os-image.bin
+	rm isodir/boot/os-image.bin
+	cp os-image.bin isodir/boot/
+	grub-mkrescue -o os-image.iso isodir
+	qemu-system-i386 -cdrom os-image.iso
 #debug
 kernel.elf: kernel_entry.o ${OBJ_FILES}
 	${LINK} -m elf_i386 -o $@ -Ttext 0x1000 $^
@@ -40,4 +45,4 @@ debug: os-image.bin kernel.elf
 %.dis: %.bin
 	ndisasm -b 32 $< > $@
 clean:
-	$(RM) *.bin *.o *.dis *.elf boot/*.o boot/*.bin drivers/*.o kernel/src/*.o cpu/*.o shell/*.o kernel/utils/*.o
+	$(RM) *.bin *.o *.dis *.elf boot/*.o boot/*.bin drivers/*.o kernel/src/*.o cpu/*.o shell/*.o kernel/utils/*.o *.bin *.iso isodir/boot/os-image.bin
