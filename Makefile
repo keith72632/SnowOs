@@ -6,18 +6,16 @@ C_SOURCES = $(wildcard kernel/src/*.c drivers/*.c cpu/*.c kernel/utils/*.c shell
 HEADERS = $(wildcard drivers/*.h cpu/*.h kernel/utils/*.h shell/*.h) cpu/isr.h
 OBJ_FILES = ${C_SOURCES:.c=.o cpu/interrupt.o}
 GDB = /home/linuxbrew/.linuxbrew/Cellar/i386-elf-gdb/10.1/bin/i386-elf-gdb
-LINK = /home/linuxbrew/.linuxbrew/Cellar/x86_64-elf-binutils/2.36.1/bin/x86_64-elf-ld
-CC = /home/linuxbrew/.linuxbrew/Cellar/x86_64-elf-gcc/10.2.0/bin/x86_64-elf-gcc
-CC_FLAGS = -g -m32 -ffreestanding -c 
+LINK = /usr/local/i386elfgcc/bin/i386-elf-ld
+CC = /usr/local/i386elfgcc/bin/i386-elf-gcc
+CC_FLAGS = -g -m32 -ffreestanding -c -std=gnu99
 #first rule is the one exectued when no parameters
 all: run
 
 kernel.bin: kernel_entry.o ${OBJ_FILES}
-	${LINK} -m elf_i386 -o $@ -Ttext 0x1000 $^ --oformat binary
+	${LINK} -o $@ -Ttext 0x1000 $^ --oformat binary
 kernel_entry.o: boot/kernel_entry.asm
 	nasm $< -felf32 -o $@
-kernel.o: kernel/src/kernel.c 
-	gcc -fno-pie -m32 -ffreestanding -c $< -o $@
 mbr.bin: boot/mbr.asm
 	nasm $< -f bin -o $@
 os-image.bin: mbr.bin kernel.bin
@@ -26,7 +24,7 @@ os-image.bin: mbr.bin kernel.bin
 run: os-image.bin
 	qemu-system-i386 -fda $<
 iso: os-image.bin
-	rm isodir/boot/os-image.bin
+	#rm isodir/boot/os-image.bin
 	cp os-image.bin isodir/boot/
 	grub-mkrescue -o os-image.iso isodir
 	qemu-system-i386 -cdrom os-image.iso

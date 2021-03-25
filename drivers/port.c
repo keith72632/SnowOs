@@ -10,7 +10,7 @@ unsigned char port_byte_in(unsigned short port)
 {
 	unsigned char result;
     /*intruction : output : input : clobbered*/
-	__asm__("in %%dx, %%al" : "=a" (result) : "d" (port));
+	__asm__("in %%dx, %%al" : "a=" (result) : "d" (port));
 	return result;
 }
 
